@@ -1,4 +1,8 @@
+accelerate
 flask
+numpy
+pillow
+pytest
 torch
 transformers
 
