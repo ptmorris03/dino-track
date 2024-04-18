@@ -8,39 +8,26 @@ from PIL import Image
 import numpy as np
 
 
-@pytest.fixture
-def image():
-    # Create a dummy black image
-    width, height = 512, 512
-    image_array = np.zeros((height, width, 3), dtype=np.uint8)
-    return Image.fromarray(image_array)
+width, height = 512, 512
+image_array = np.zeros((height, width, 3), dtype=np.uint8)
+image = Image.fromarray(image_array)
 
 
 @pytest.mark.parametrize(
-    "image",
-    [
-        ([image(), image()]),
-        (image()),
-    ],
+    "image, count",
+    [([image, image], 2), (image, 1), ("bad_path.jpg", 0)],
 )
 class TestReadImage:
-    def test_call(self, image):
-        read_image = ReadImage()
-        result = read_image(image)
-        assert result
+    def test_call(self, image, count):
+        inputs = None
 
-    def test_image_open(self, image):
-        read_image = ReadImage()
-        result = read_image(image)
-        assert isinstance(result, Image.Image)
+        if isinstance(image, str) and not Path(image).exists():
+            with pytest.raises(FileNotFoundError):
+                inputs = ReadImage()(image)
+        else:
+            inputs = ReadImage()(image)
 
-    def test_invalid_image(self, image):
-        read_image = ReadImage()
-        with pytest.raises(Exception):
-            read_image("bad_image.jpg")
-
-    def test_config(self, image, expected_result):
-        config = {"model_name": "model", "width": 100, "height": 100}
-        read_image = ReadImage(config)
-        result = read_image(image)
-        assert result == expected_result
+        if inputs is None:
+            assert count is 0
+        else:
+            assert len(inputs["pixel_values"]) == count
