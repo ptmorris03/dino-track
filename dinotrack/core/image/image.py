@@ -1,23 +1,11 @@
 from pathlib import Path
 from typing import Union
 from PIL import Image
+
 from transformers import AutoImageProcessor
-from dataclasses import dataclass, field
 import numpy as np
 
-from dinotrack.settings import DEFAULT_MODEL
-
-
-@dataclass
-class ReadImageConfig:
-    width: int = 504
-    height: int = 504
-    model_name: str = DEFAULT_MODEL
-    kwargs: dict = field(default_factory=dict)
-
-    def __post_init__(self):
-        if "return_tensors" not in self.kwargs:
-            self.kwargs["return_tensors"] = "pt"
+from dinotrack.core.image.config import ReadImageConfig
 
 
 ImageInput = Union[str, Image.Image, np.ndarray]
