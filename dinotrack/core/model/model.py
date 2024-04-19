@@ -1,11 +1,10 @@
+from dataclasses import dataclass, field
+
 import transformers
 from transformers import AutoModel
 from transformers.modeling_outputs import BaseModelOutputWithPooling
 
 from dinotrack.settings import DEFAULT_HEIGHT, DEFAULT_MODEL, DEFAULT_WIDTH
-
-
-from dataclasses import dataclass, field
 
 
 @dataclass

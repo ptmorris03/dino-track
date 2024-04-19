@@ -3,8 +3,8 @@ from dataclasses import dataclass, field
 import transformers
 from transformers import AutoModel, BaseModelOutputWithPooling
 
-from dinotrack.core.model.model import ModelConfig
 from dinotrack.core.model.class_head import ClassHeadConfig
+from dinotrack.core.model.model import ModelConfig
 
 
 @dataclass
