@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
 
 import transformers
-from transformers import AutoModel, BaseModelOutputWithPooling
+from transformers import AutoModel
+from transformers.modeling_outputs import BaseModelOutputWithPooling
 
 from dinotrack.core.model.class_head import ClassHeadConfig
 from dinotrack.core.model.model import ModelConfig
