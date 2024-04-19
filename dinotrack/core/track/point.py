@@ -13,6 +13,7 @@ class PointTracker:
         y (float): The y-coordinate of the point.
         label (int | str): The label of the point.
         alpha (float, optional): The alpha value for exponential moving average. Defaults to 0.5.
+        scale_variance (bool, optional): Whether to scale the variance. Defaults to True.
         device (str | torch.device | None, optional): The device to use for computation. Defaults to None.
         vector (torch.Tensor, optional): The vector representing the point. Defaults to None.
     """
@@ -21,6 +22,7 @@ class PointTracker:
     y: float
     label: int | str
     alpha: float = 0.5
+    scale_variance: bool = True
     device: str | torch.device | None = None
     vector: torch.Tensor = field(init=False, repr=False)
 
@@ -47,8 +49,12 @@ class PointTracker:
         if hasattr(self, "vector"):
             alpha = self.alpha.to(self.vector.device)
             vector = vector.to(self.vector.device)
-            variance_scale = torch.sqrt(self.alpha**2 + (1 - self.alpha) ** 2)
-            self.vector = (alpha * vector + (1 - alpha) * self.vector) / variance_scale
+            self.vector = alpha * vector + (1 - alpha) * self.vector
+
+            # cancel the effect of (alpha)/(1 - alpha) scaling on variance
+            if self.scale_variance:
+                self.vector /= torch.sqrt(self.alpha**2 + (1 - self.alpha) ** 2)
+
             return self.vector
 
         # initialize the vector
