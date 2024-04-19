@@ -1,10 +1,13 @@
+from collections import namedtuple
 from dataclasses import dataclass, field
 
+import torch
 import transformers
+from torch import nn
 from transformers import AutoModel
 from transformers.modeling_outputs import BaseModelOutputWithPooling
 
-from dinotrack.core.model.class_head import ClassHeadConfig
+from dinotrack.core.model.class_head import ClassHead, ClassHeadConfig
 from dinotrack.core.model.model import ModelConfig
 
 
@@ -20,6 +23,8 @@ class TrackingModelConfig:
     neighbor_dim: int
     head_config: dict = field(default_factory=dict)
     model_config: dict = field(default_factory=dict)
+    kwargs: dict = field(default_factory=dict)
+    head_kwargs: dict = field(default_factory=dict)
 
     def __post_init__(self):
         """
@@ -29,7 +34,21 @@ class TrackingModelConfig:
         self.head_config = ClassHeadConfig(**self.head_config)
 
 
-class TrackingModel:
+@dataclass
+class TrackingOutputs:
+    """
+    A class representing the outputs of the object tracking.
+
+    Attributes:
+    - outputs: The outputs of the object tracking model.
+    - logits: The logits tensor produced by the object tracking model.
+    """
+
+    outputs: BaseModelOutputWithPooling
+    logits: torch.Tensor
+
+
+class TrackingModel(nn.Module):
     """
     A class representing a model for object tracking.
 
@@ -45,7 +64,7 @@ class TrackingModel:
     def __init__(self, config: dict = {}):
         self.config = config = ModelConfig(**config)
         self.model = AutoModel.from_pretrained(config.model_name)
-        self.model.crop_size = {"width": config.width, "height": config.height}
+        self.head = ClassHead(config.head_config)
 
     def __call__(
         self, inputs: transformers.image_processing_utils.BatchFeature
@@ -60,4 +79,6 @@ class TrackingModel:
             BaseModelOutputWithPooling: The output of the object tracking, including the pooled features.
 
         """
-        return self.model(**inputs, **self.config.kwargs)
+        outputs = self.model(**inputs, **self.config.kwargs)
+        logits = self.head(outputs.last_hidden_state, **self.config.head_kwargs)
+        return TrackingOutputs(outputs, logits)
