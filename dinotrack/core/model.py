@@ -1,9 +1,6 @@
-from pathlib import Path
-from typing import Union
-from PIL import Image
-from transformers import AutoImageProcessor
 from dataclasses import dataclass, field
-import numpy as np
+
+import transformers
 from transformers import AutoModel
 
 from dinotrack.settings import DEFAULT_MODEL
@@ -21,11 +18,5 @@ class Model:
         self.model = AutoModel.from_pretrained(config.model_name)
         self.model.crop_size = {"width": config.width, "height": config.height}
 
-    def __call__(self, image: Union[ImageInput, list[ImageInput]]):
-        try:
-            image = [Image.open(i) for i in image]
-        except:
-            if isinstance(image, str) or isinstance(image, Path):
-                image = Image.open(image)
-
-        return self.model(image, **self.config.kwargs)
+    def __call__(self, inputs: transformers.image_processing_utils.BatchFeature):
+        return self.model(**inputs, **self.config.kwargs)
