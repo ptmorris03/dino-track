@@ -24,6 +24,7 @@ class ClassHeadConfig:
 
     num_classes: int
     model_dim: int
+    bias: bool = True
     activation: Callable[[torch.Tensor], torch.Tensor] = F.tanh
     hidden_dim: list[int] = field(default_factory=list)
 
@@ -32,7 +33,11 @@ class ClassHeadConfig:
         Initializes the patch classification head configuration.
         """
         if not isinstance(self.hidden_dim, list):
-            self.hidden_dim = [self.hidden_dim]
+            self.hidden_dim = (
+                [self.hidden_dim]
+                if isinstance(self.hidden_dim, int)
+                else list(self.hidden_dim)
+            )
 
         if isinstance(self.activation, str):
             self.activation = multi_getattr([F, nn, torch], self.activation)
@@ -47,7 +52,7 @@ class ClassHeadConfig:
         activation = getattr(self.activation, "forward", None)
         if activation is None:
             activation = self.activation
-            self_offset = 0  # function, not a class
+            cls_offset = 0  # function, not a class
 
         assert (activation.__code__.co_argcount - cls_offset) == 1
 
@@ -78,7 +83,7 @@ class ClassHead(nn.Module):
         self.config = config = ClassHeadConfig(**config)
         self.layers = nn.ModuleList(
             [
-                nn.Linear(d_in, d_out)
+                nn.Linear(d_in, d_out, bias=config.bias)
                 for d_in, d_out in zip(config.dims[:-1], config.dims[1:])
             ]
         )
