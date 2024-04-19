@@ -7,5 +7,5 @@ setup(
     name="dinotrack",
     version="1.0",
     install_requires=requirements,
-    packages=["dinotrack"],
+    packages=["dinotrack", "dinotrack/core", "dinotrack/core/image"],
 )
