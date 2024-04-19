@@ -1,12 +1,11 @@
-import pytest
-from PIL import Image
 from pathlib import Path
 from typing import Union
 
-from dinotrack.core.image import ReadImage
-from PIL import Image
 import numpy as np
+import pytest
+from PIL import Image
 
+from dinotrack.core.image import ReadImage
 
 width, height = 512, 512
 image_array = np.zeros((height, width, 3), dtype=np.uint8)
@@ -28,6 +27,6 @@ class TestReadImage:
             inputs = ReadImage()(image)
 
         if inputs is None:
-            assert count is 0
+            assert count == 0
         else:
             assert len(inputs["pixel_values"]) == count

@@ -1,9 +1,9 @@
 from pathlib import Path
 from typing import Union
-from PIL import Image
 
 import numpy as np
 import transformers
+from PIL import Image
 from transformers import AutoImageProcessor
 
 from dinotrack.core.image.config import ReadImageConfig

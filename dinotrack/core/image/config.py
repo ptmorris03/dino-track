@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
-from dinotrack.settings import DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_MODEL
+
+from dinotrack.settings import DEFAULT_HEIGHT, DEFAULT_MODEL, DEFAULT_WIDTH
 
 
 @dataclass
