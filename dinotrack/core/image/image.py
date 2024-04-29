@@ -57,6 +57,7 @@ class ReadImage:
         self.config = config = ReadImageConfig(**config)
         self.processor = AutoImageProcessor.from_pretrained(config.model_name)
         self.processor.crop_size = {"width": config.width, "height": config.height}
+        self.processor.size = {"shortest_edge": min(config.width, config.height)}
 
     def __call__(
         self, image: Union[ImageInput, list[ImageInput]]
