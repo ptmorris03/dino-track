@@ -18,6 +18,7 @@ class ReadImageConfig:
     Attributes:
         width (int): The width of the image. Defaults to DEFAULT_WIDTH.
         height (int): The height of the image. Defaults to DEFAULT_HEIGHT.
+        center_crop (bool): Whether to center crop the image. Defaults to False.
         model_name (str): The name of the model. Defaults to DEFAULT_MODEL.
         kwargs (dict): Additional keyword arguments. Defaults to an empty dictionary.
 
@@ -27,6 +28,7 @@ class ReadImageConfig:
 
     width: int = DEFAULT_WIDTH
     height: int = DEFAULT_HEIGHT
+    center_crop: bool = False
     model_name: str = DEFAULT_MODEL
     kwargs: dict = field(default_factory=dict)
 
@@ -57,6 +59,7 @@ class ReadImage:
         self.config = config = ReadImageConfig(**config)
         self.processor = AutoImageProcessor.from_pretrained(config.model_name)
         self.processor.crop_size = {"width": config.width, "height": config.height}
+        self.processor.center_crop = config.center_crop
         self.processor.size = {"shortest_edge": min(config.width, config.height)}
 
     def __call__(
