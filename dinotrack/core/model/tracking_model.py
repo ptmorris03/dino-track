@@ -1,5 +1,6 @@
 from collections import namedtuple
 from dataclasses import dataclass, field
+from typing import Union
 
 import torch
 import transformers
@@ -9,6 +10,7 @@ from transformers.modeling_outputs import BaseModelOutputWithPooling
 
 from dinotrack.core.model.class_head import ClassHead, ClassHeadConfig
 from dinotrack.core.model.model import ModelConfig
+from dinotrack.settings import DEVICE
 
 
 @dataclass
@@ -18,11 +20,17 @@ class TrackingModelConfig:
 
     Attributes:
         model_config (dict): A dictionary containing the configuration options for the model.
+        head_config (dict): A dictionary containing the configuration options for the head.
+        neighbor_dim (int): The dimension of the neighbor.
+        device (Union[str, torch.Device]): The device to use for the model.
+        kwargs (dict): Additional keyword arguments for the model.
+        head_kwargs (dict): Additional keyword arguments for the head.
     """
 
     neighbor_dim: int
     head_config: dict = field(default_factory=dict)
     model_config: dict = field(default_factory=dict)
+    device: Union[str, torch.Device] = DEVICE
     kwargs: dict = field(default_factory=dict)
     head_kwargs: dict = field(default_factory=dict)
 
@@ -30,6 +38,11 @@ class TrackingModelConfig:
         """
         Initializes the track model configuration.
         """
+        if "device" not in self.kwargs:
+            self.kwargs["device"] = self.device
+        if "device" not in self.head_kwargs:
+            self.head_kwargs["device"] = self.device
+
         self.model_config = ModelConfig(**self.model_config)
         self.head_config = ClassHeadConfig(**self.head_config)
 
@@ -63,8 +76,8 @@ class TrackingModel(nn.Module):
 
     def __init__(self, config: dict = {}):
         self.config = config = ModelConfig(**config)
-        self.model = AutoModel.from_pretrained(config.model_name)
-        self.head = ClassHead(config.head_config)
+        self.model = AutoModel.from_pretrained(config.model_name).to(config.device)
+        self.head = ClassHead(config.head_config).to(config.device)
 
     def __call__(
         self, inputs: transformers.image_processing_utils.BatchFeature
@@ -79,6 +92,6 @@ class TrackingModel(nn.Module):
             BaseModelOutputWithPooling: The output of the object tracking, including the pooled features.
 
         """
-        outputs = self.model(**inputs, **self.config.kwargs)
+        outputs = self.model(**inputs.to(self.config.device), **self.config.kwargs)
         logits = self.head(outputs.last_hidden_state, **self.config.head_kwargs)
         return TrackingOutputs(outputs, logits)

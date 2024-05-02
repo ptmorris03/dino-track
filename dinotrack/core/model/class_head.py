@@ -1,11 +1,12 @@
 from dataclasses import dataclass, field
-from typing import Callable
+from typing import Callable, Union
 
 import torch
 import torch.nn.functional as F
 from torch import nn
 
 from dinotrack.util import multi_getattr
+from dinotrack.settings import DEVICE
 
 
 @dataclass
@@ -27,6 +28,7 @@ class ClassHeadConfig:
     bias: bool = True
     activation: Callable[[torch.Tensor], torch.Tensor] = F.tanh
     hidden_dim: list[int] = field(default_factory=list)
+    device: Union[str, torch.Device] = DEVICE
 
     def __post_init__(self):
         """
