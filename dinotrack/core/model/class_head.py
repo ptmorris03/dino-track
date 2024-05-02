@@ -28,7 +28,7 @@ class ClassHeadConfig:
     bias: bool = True
     activation: Callable[[torch.Tensor], torch.Tensor] = F.tanh
     hidden_dim: list[int] = field(default_factory=list)
-    device: Union[str, torch.Device] = DEVICE
+    device: Union[str, torch.device] = DEVICE
 
     def __post_init__(self):
         """

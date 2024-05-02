@@ -18,14 +18,14 @@ class ModelConfig:
         width (int): The width of the model.
         height (int): The height of the model.
         model_name (str): The name of the model.
-        device (Union[str, torch.Device]): The device to use for the model.
+        device (Union[str, torch.sevice]): The device to use for the model.
         kwargs (dict): Additional keyword arguments for the model.
     """
 
     width: int = DEFAULT_WIDTH
     height: int = DEFAULT_HEIGHT
     model_name: str = DEFAULT_MODEL
-    device: Union[str, torch.Device] = DEVICE
+    device: Union[str, torch.device] = DEVICE
     kwargs: dict = field(default_factory=dict)
 
 

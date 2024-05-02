@@ -22,7 +22,7 @@ class TrackingModelConfig:
         model_config (dict): A dictionary containing the configuration options for the model.
         head_config (dict): A dictionary containing the configuration options for the head.
         neighbor_dim (int): The dimension of the neighbor.
-        device (Union[str, torch.Device]): The device to use for the model.
+        device (Union[str, torch.device]): The device to use for the model.
         kwargs (dict): Additional keyword arguments for the model.
         head_kwargs (dict): Additional keyword arguments for the head.
     """
@@ -30,7 +30,7 @@ class TrackingModelConfig:
     neighbor_dim: int
     head_config: dict = field(default_factory=dict)
     model_config: dict = field(default_factory=dict)
-    device: Union[str, torch.Device] = DEVICE
+    device: Union[str, torch.device] = DEVICE
     kwargs: dict = field(default_factory=dict)
     head_kwargs: dict = field(default_factory=dict)
 
