@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from torch import nn
 
 from dinotrack.util import multi_getattr
-from dinotrack.settings import DEVICE
+from dinotrack.settings import DEVICE, DTYPE
 
 
 @dataclass
@@ -21,6 +21,10 @@ class ClassHeadConfig:
             Default is F.tanh.
         hidden_dim (list[int]): The hidden dimensions of the patch classification head.
             Default is an empty list.
+        bias (bool): Whether to use a bias term. Default is True.
+        device (Union[str, torch.device]): The device to use for the patch classification head.
+            Default is DEVICE.
+        dtype (torch.dtype): The data type to use for the patch classification head.
     """
 
     num_classes: int
@@ -29,6 +33,7 @@ class ClassHeadConfig:
     activation: Callable[[torch.Tensor], torch.Tensor] = F.tanh
     hidden_dim: list[int] = field(default_factory=list)
     device: Union[str, torch.device] = DEVICE
+    dtype: torch.dtype = DTYPE
 
     def __post_init__(self):
         """
@@ -86,6 +91,8 @@ class ClassHead(nn.Module):
         self.layers = nn.ModuleList(
             [
                 nn.Linear(d_in, d_out, bias=config.bias)
+                .to(config.dtype)
+                .to(config.device)
                 for d_in, d_out in zip(config.dims[:-1], config.dims[1:])
             ]
         )
@@ -100,7 +107,7 @@ class ClassHead(nn.Module):
         Returns:
             torch.Tensor: The output tensor of the patch classification
         """
-        x = inputs
+        x = inputs.to(self.config.dtype).to(self.config.device)
         for layer in self.layers[:-1]:
             x = self.config.activation(layer(x))
         return self.layers[-1](x)

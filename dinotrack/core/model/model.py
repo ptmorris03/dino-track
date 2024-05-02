@@ -6,7 +6,13 @@ import transformers
 from transformers import AutoModel
 from transformers.modeling_outputs import BaseModelOutputWithPooling
 
-from dinotrack.settings import DEFAULT_HEIGHT, DEFAULT_MODEL, DEFAULT_WIDTH, DEVICE
+from dinotrack.settings import (
+    DEFAULT_HEIGHT,
+    DEFAULT_MODEL,
+    DEFAULT_WIDTH,
+    DEVICE,
+    DTYPE,
+)
 
 
 @dataclass
@@ -18,6 +24,7 @@ class ModelConfig:
         width (int): The width of the model.
         height (int): The height of the model.
         model_name (str): The name of the model.
+        dtype (torch.dtype): The data type to use for the model.
         device (Union[str, torch.sevice]): The device to use for the model.
         kwargs (dict): Additional keyword arguments for the model.
     """
@@ -25,6 +32,7 @@ class ModelConfig:
     width: int = DEFAULT_WIDTH
     height: int = DEFAULT_HEIGHT
     model_name: str = DEFAULT_MODEL
+    dtype: torch.dtype = DTYPE
     device: Union[str, torch.device] = DEVICE
     kwargs: dict = field(default_factory=dict)
 
@@ -44,7 +52,11 @@ class Model:
 
     def __init__(self, config: dict = {}):
         self.config = config = ModelConfig(**config)
-        self.model = AutoModel.from_pretrained(config.model_name).to(config.device)
+        self.model = (
+            AutoModel.from_pretrained(config.model_name)
+            .to(config.dtype)
+            .to(config.device)
+        )
         self.model.crop_size = {"width": config.width, "height": config.height}
 
     def __call__(
@@ -60,4 +72,6 @@ class Model:
             BaseModelOutputWithPooling: The output of the image processing, including the pooled features.
 
         """
-        return self.model(**inputs.to(self.config.device), **self.config.kwargs)
+        return self.model(
+            **inputs.to(self.config.dtype).to(self.config.device), **self.config.kwargs
+        )
